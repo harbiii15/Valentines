@@ -56,7 +56,7 @@ const sendEmailHttp = async ({ from, to, subject, text, html }) => {
   }
 };
 
-const defaultMessage = `Valentine's Date Details
+const defaultMessage = `\uD83D\uDC8C Valentine's Date Details \uD83D\uDC8C
 \uD83D\uDCC5 Date: February 14
 \u23F0 Time: 12:00 AM - 12:00 PM
 \uD83D\uDCCD Venue: Kahit saan, basta kasama ko asawa ko hehehe
