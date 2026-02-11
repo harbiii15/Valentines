@@ -6,7 +6,7 @@ let yesSize = 1;
 
 const sendYesEmail = async () => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 7000);
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
 
   try {
     const response = await fetch("/send", {
@@ -17,7 +17,12 @@ const sendYesEmail = async () => {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to send email");
+      let details = "Failed to send email";
+      try {
+        const data = await response.json();
+        if (data?.error) details = data.error;
+      } catch {}
+      throw new Error(details);
     }
   } finally {
     clearTimeout(timeoutId);
@@ -30,11 +35,11 @@ yesBtn?.addEventListener("click", async () => {
 
   try {
     await sendYesEmail();
-    message.textContent = "Invitation Sent!";
+    message.textContent = "Sent! Redirecting...";
     window.location.href = "/next.html";
   } catch (err) {
     console.error(err);
-    message.textContent = "Email failed. Please try again.";
+    message.textContent = `Email failed: ${err?.message || "Please try again."}`;
     yesBtn.disabled = false;
   }
 });
