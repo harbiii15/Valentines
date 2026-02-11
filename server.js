@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import nodemailer from "nodemailer";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -17,29 +16,45 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: String(process.env.SMTP_SECURE).toLowerCase() === "true",
-  pool: true,
-  maxConnections: 1,
-  maxMessages: 50,
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const RESEND_API_URL = "https://api.resend.com/emails";
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const FROM_EMAIL = process.env.FROM_EMAIL;
+const TO_EMAIL = process.env.TO_EMAIL;
+const EMAIL_SUBJECT =
+  process.env.EMAIL_SUBJECT || "Its official, bawal na mag back out ok.";
 
-transporter.verify((error) => {
-  if (error) {
-    console.error("SMTP verify failed:", error.message);
-  } else {
-    console.log("SMTP ready");
+const sendEmailHttp = async ({ from, to, subject, text, html }) => {
+  if (!RESEND_API_KEY) {
+    throw new Error("Missing RESEND_API_KEY");
   }
-});
+  if (!from || !to) {
+    throw new Error("Missing FROM_EMAIL or TO_EMAIL");
+  }
+
+  const response = await fetch(RESEND_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject,
+      text,
+      html,
+    }),
+  });
+
+  if (!response.ok) {
+    let details = "Email API request failed";
+    try {
+      const body = await response.json();
+      details = body?.message || body?.error || details;
+    } catch {}
+    throw new Error(details);
+  }
+};
 
 const defaultMessage = `Valentine's Date Details
 \uD83D\uDCC5 Date: February 14
@@ -67,10 +82,10 @@ app.post("/send", async (req, res) => {
   const body = escapeHtml(lines.slice(2).join("\n")).replace(/\n/g, "<br>");
 
   try {
-    await transporter.sendMail({
-      from: process.env.FROM_EMAIL || process.env.SMTP_USER,
-      to: process.env.TO_EMAIL,
-      subject: "Its official, bawal na mag back out ok.",
+    await sendEmailHttp({
+      from: FROM_EMAIL,
+      to: TO_EMAIL,
+      subject: EMAIL_SUBJECT,
       text: message,
       html: `
         <div style="margin:0;padding:24px;background:#fff7fb;">
