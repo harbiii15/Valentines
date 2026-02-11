@@ -25,16 +25,17 @@ const sendYesEmail = async () => {
 };
 
 yesBtn?.addEventListener("click", async () => {
-  message.textContent = "Yay! I love you!";
+  message.textContent = "Sending invitation...";
   yesBtn.disabled = true;
 
   try {
     await sendYesEmail();
+    message.textContent = "Invitation Sent!";
+    window.location.href = "/next.html";
   } catch (err) {
     console.error(err);
-    message.textContent = "Saved! Redirecting...";
-  } finally {
-    window.location.href = "/next.html";
+    message.textContent = "Email failed. Please try again.";
+    yesBtn.disabled = false;
   }
 });
 
