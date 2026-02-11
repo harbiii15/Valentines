@@ -3,18 +3,27 @@ const noBtn = document.getElementById("noBtn");
 const message = document.getElementById("message");
 
 let yesSize = 1;
+const REQUEST_TIMEOUT_MS = 90000;
 
 const sendYesEmail = async () => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
-    const response = await fetch("/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-      signal: controller.signal,
-    });
+    let response;
+    try {
+      response = await fetch("/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+        signal: controller.signal,
+      });
+    } catch (err) {
+      if (err?.name === "AbortError") {
+        throw new Error("Request timed out while waking server. Click YES again.");
+      }
+      throw err;
+    }
 
     if (!response.ok) {
       let details = "Failed to send email";
