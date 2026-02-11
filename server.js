@@ -62,7 +62,7 @@ const defaultMessage = `\uD83D\uDC8C Valentine's Date Details \uD83D\uDC8C
 \uD83D\uDCCD Venue: Kahit saan, basta kasama ko asawa ko hehehe
 
 Hi mii
-You know that i am the luckiest person in the world kasi your always there for me wag mo ako iiwan ahh, dont forget sa 14 ikaw benta ako tulog hehheheehehe. wag mo din kalimutan ung promise mo hmmm`;
+You know that i am the luckiest person in the world kasi your always there for me wag mo ako iiwan ahh, dont forget sa 14 ikaw benta ako tulog hehheheehehe. wag mo din kalimutan ung promise mo hmmm📷`;
 
 const escapeHtml = (value) =>
   value
