@@ -21,10 +21,24 @@ const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT) || 587,
   secure: String(process.env.SMTP_SECURE).toLowerCase() === "true",
+  pool: true,
+  maxConnections: 1,
+  maxMessages: 50,
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+});
+
+transporter.verify((error) => {
+  if (error) {
+    console.error("SMTP verify failed:", error.message);
+  } else {
+    console.log("SMTP ready");
+  }
 });
 
 const defaultMessage = `Valentine's Date Details
@@ -87,7 +101,9 @@ app.post("/send", async (req, res) => {
     res.status(200).json({ ok: true });
   } catch (error) {
     console.error("Email send failed:", error);
-    res.status(500).json({ ok: false, error: "Failed to send email" });
+    res
+      .status(500)
+      .json({ ok: false, error: error?.message || "Failed to send email" });
   }
 });
 
